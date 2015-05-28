@@ -10,7 +10,6 @@ var paths = {
 	coffeeTest: ['coffee/test.coffee'],
 	testDirectory:__dirname+'/test',
     js:'js/'
-    // js: 'C:/cm3_/node_modules/docxtemplater-image-module/js'
 };
 
 gulp.task('allCoffee', function () {
