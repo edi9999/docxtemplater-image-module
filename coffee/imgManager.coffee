@@ -4,10 +4,10 @@ module.exports = class ImgManager
 	imageExtensions=['gif','jpeg','jpg','emf','png']
 	constructor:(@zip,@fileName)->
 		@endFileName=@fileName.replace(/^.*?([a-z0-9]+)\.xml$/,"$1")
-		if "slides/ppt" in @filename
+		if @fileName.indexOf("ppt/slides" == 0)
 			@fileType = "ppt"
-			@fileTypeName = "powerpoint"
-			@relationshipFilePath = @fileType+"slides/_rels/"+ this.endFileName + ".xml.rels";
+			@fileTypeName = "presentation"
+			@relationshipFilePath = @fileType+"/slides/_rels/"+ this.endFileName + ".xml.rels";
 		else
 			@fileType = "word"
 			@fileTypeName = "document"
@@ -31,6 +31,7 @@ module.exports = class ImgManager
 	hasImage:(fileName)->
 		@zip.files[fileName]?
 	loadImageRels: () ->
+		console.log(@fileName, @relationshipFilePath)
 		file=@zip.files[@relationshipFilePath] || @zip.files[@fileType+"/_rels/"+@fileTypeName+".xml.rels"]
 		if file==undefined then return
 		content= DocUtils.decode_utf8 file.asText()

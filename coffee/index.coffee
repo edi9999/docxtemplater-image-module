@@ -46,6 +46,15 @@ class ImageModule
 		subContent=new SubContent(xmlTemplater.content)
 			.getInnerTag(templaterState)
 			.getOuterXml('p:sp').text
+		return_value={}
+		xml = new XML(subContent)
+		xform = xml.child('spPr').child('xfrm')
+		return_value.txtX = xform.child('off').attribute('x').getValue()
+		return_value.txtY = xform.child('off').attribute('y').getValue()
+		return_value.txtW = xform.child('ext').attribute('cx').getValue()
+		return_value.txtH = xform.child('ext').attribute('cy').getValue()
+		return_value
+
 	convertPixelsToEmus:(pixel)->
 		Math.round(pixel * 9525)
 	getSizeFromData:(imgData)->
@@ -67,6 +76,7 @@ class ImageModule
 		catch e
 			return @replaceBy(startEnd,tagXml)
 		imageRels=@imgManager.loadImageRels();
+		console.log('ImageRels', imageRels)
 		if imageRels
 			rId=imageRels.addImageRels(@getNextImageName(),imgBuffer)
 
@@ -80,10 +90,11 @@ class ImageModule
 				outsideElement=tagXml.substr(0,1)+':p'
 				newText=@getImageXmlCentered(rId,size)
 			if @fileType == 'presentation'
-				position_of_text_box = @getPositionFromText()
-				newText=@getPresentationImageXml(rId-1, position.txtX, position.txtY, position.txtW, position.txtH)
+				console.log("File is Presentation")
+				positionOfTextBox = @getPositionFromText()
+				newText=@getPresentationImageXml(rId-1, positionOfTextBox.txtX, positionOfTextBox.txtY, positionOfTextBox.txtW, positionOfTextBox.txtH)
 				outsideElement = 'p:sp'
-
+			console.log('About to replace BY')
 			@replaceBy(newText,outsideElement)
 	replaceQr:->
 		xmlTemplater=@manager.getInstance('xmlTemplater')
