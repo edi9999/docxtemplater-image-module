@@ -124,6 +124,24 @@ describe 'image adding with {% image} syntax', ()->
 
 		buffer=zip.generate({type:"nodebuffer"})
 		fs.writeFile("test_multi.docx",buffer);
+
+	it 'should work in powerpoint presentations',()->
+		name='imagePresentationExample.pptx'
+		imageModule=new ImageModule({centered:false, presentation:true})
+		docX[name].attachModule(imageModule)
+		out=docX[name]
+			.load(docX[name].loadedContent)
+			.setData({image:'examples/image.png', image2:'examples/image2.png'})
+			.render()
+
+		zip=out.getZip()
+
+		imageFile=zip.files['ppt/media/image_generated_1.png']
+		expect(imageFile?).to.equal(true)
+
+		imageFile2=zip.files['ppt/media/image_generated_2.png']
+		expect(imageFile2?).to.equal(true)
+
 	
 	it 'should work with image in header/footer',()->
 		name='imageHeaderFooterExample.docx'

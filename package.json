@@ -19,6 +19,7 @@
     "docxtemplater": "^1.0.5",
     "gulp-browserify": "^0.5.0",
     "jszip": "^2.4.0",
+    "node-jsxml": "^0.6.0",
     "png-js": "^0.1.1",
     "qrcode-reader": "0.0.5",
     "xmldom": "^0.1.19"

@@ -14,7 +14,8 @@ class ImageModule
 		if !@options.centered? then @options.centered=false
 		@qrQueue=[]
 		@imageNumber=1
-		@fileType="presentation" #TODO: handle this properly
+		if @options.presentation then @presentation=true
+		else @presentation=false
 	handleEvent:(event,eventData)->
 		if event=='rendering-file'
 			@renderingFileName=eventData
@@ -76,7 +77,7 @@ class ImageModule
 		catch e
 			return @replaceBy(startEnd,tagXml)
 		imageRels=@imgManager.loadImageRels();
-		console.log('ImageRels', imageRels)
+		
 		if imageRels
 			rId=imageRels.addImageRels(@getNextImageName(),imgBuffer)
 
@@ -89,12 +90,11 @@ class ImageModule
 			if @options.centered==true
 				outsideElement=tagXml.substr(0,1)+':p'
 				newText=@getImageXmlCentered(rId,size)
-			if @fileType == 'presentation'
-				console.log("File is Presentation")
+			if @presentation
 				positionOfTextBox = @getPositionFromText()
 				newText=@getPresentationImageXml(rId, positionOfTextBox.txtX, positionOfTextBox.txtY, positionOfTextBox.txtW, positionOfTextBox.txtH)
 				outsideElement = 'p:sp'
-			console.log('About to replace BY', newText)
+			
 			@replaceBy(newText,outsideElement)
 	replaceQr:->
 		xmlTemplater=@manager.getInstance('xmlTemplater')

@@ -31,7 +31,6 @@ module.exports = class ImgManager
 	hasImage:(fileName)->
 		@zip.files[fileName]?
 	loadImageRels: () ->
-		console.log(@fileName, @relationshipFilePath)
 		file=@zip.files[@relationshipFilePath] || @zip.files[@fileType+"/_rels/"+@fileTypeName+".xml.rels"]
 		if file==undefined then return
 		content= DocUtils.decode_utf8 file.asText()
@@ -79,7 +78,10 @@ module.exports = class ImgManager
 		newTag.namespaceURI= null
 		newTag.setAttribute('Id',"rId#{@maxRid}")
 		newTag.setAttribute('Type','http://schemas.openxmlformats.org/officeDocument/2006/relationships/image')
-		newTag.setAttribute('Target',"media/#{realImageName}")
+		if @fileType == "ppt"
+			newTag.setAttribute('Target',"../media/#{realImageName}")
+		else
+			newTag.setAttribute('Target',"../media/#{realImageName}")
 		relationships.appendChild newTag
 		@setImage(@relationshipFilePath, DocUtils.encode_utf8 DocUtils.xml2Str @xmlDoc)
 		@maxRid
