@@ -4,7 +4,7 @@ module.exports = class ImgManager
 	imageExtensions=['gif','jpeg','jpg','emf','png']
 	constructor:(@zip,@fileName)->
 		@endFileName=@fileName.replace(/^.*?([a-z0-9]+)\.xml$/,"$1")
-		if @fileName.indexOf("ppt/slides" == 0)
+		if @fileName.indexOf("ppt/slides") == 0
 			@fileType = "ppt"
 			@fileTypeName = "presentation"
 			@relationshipFilePath = @fileType+"/slides/_rels/"+ this.endFileName + ".xml.rels";
@@ -81,7 +81,7 @@ module.exports = class ImgManager
 		if @fileType == "ppt"
 			newTag.setAttribute('Target',"../media/#{realImageName}")
 		else
-			newTag.setAttribute('Target',"../media/#{realImageName}")
+			newTag.setAttribute('Target',"media/#{realImageName}")
 		relationships.appendChild newTag
 		@setImage(@relationshipFilePath, DocUtils.encode_utf8 DocUtils.xml2Str @xmlDoc)
 		@maxRid

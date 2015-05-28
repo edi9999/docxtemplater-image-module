@@ -1,5 +1,6 @@
 fs=require('fs')
 DocxGen=require('docxtemplater')
+PptxGen = DocxGen.PptxGen;
 expect=require('chai').expect
 
 fileNames=[
@@ -10,6 +11,7 @@ fileNames=[
 	'qrExample.docx',
 	'noImage.docx',
 	'qrExample2.docx',
+	'imagePresentationExample.pptx'
 ]
 
 ImageModule=require('../js/index.js')
@@ -27,7 +29,10 @@ loadFile=(name)->
 
 for name in fileNames
 	content=loadFile(name)
-	docX[name]=new DocxGen()
+	if name.indexOf('.docx') != -1
+		docX[name]=new DocxGen()
+	else
+		docX[name]=new PptxGen()
 	docX[name].loadedContent=content
 
 describe 'image adding with {% image} syntax', ()->
@@ -131,7 +136,7 @@ describe 'image adding with {% image} syntax', ()->
 		docX[name].attachModule(imageModule)
 		out=docX[name]
 			.load(docX[name].loadedContent)
-			.setData({image:'examples/image.png', image2:'examples/image2.png'})
+			.setData({image:'examples/image.png'})
 			.render()
 
 		zip=out.getZip()
@@ -139,8 +144,7 @@ describe 'image adding with {% image} syntax', ()->
 		imageFile=zip.files['ppt/media/image_generated_1.png']
 		expect(imageFile?).to.equal(true)
 
-		imageFile2=zip.files['ppt/media/image_generated_2.png']
-		expect(imageFile2?).to.equal(true)
+		fs.writeFile("test_presentation_image.pptx",zip.generate({type:"nodebuffer"}));
 
 	
 	it 'should work with image in header/footer',()->
