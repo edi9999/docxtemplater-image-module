@@ -92,9 +92,9 @@ class ImageModule
 			if @fileType == 'presentation'
 				console.log("File is Presentation")
 				positionOfTextBox = @getPositionFromText()
-				newText=@getPresentationImageXml(rId-1, positionOfTextBox.txtX, positionOfTextBox.txtY, positionOfTextBox.txtW, positionOfTextBox.txtH)
+				newText=@getPresentationImageXml(rId, positionOfTextBox.txtX, positionOfTextBox.txtY, positionOfTextBox.txtW, positionOfTextBox.txtH)
 				outsideElement = 'p:sp'
-			console.log('About to replace BY')
+			console.log('About to replace BY', newText)
 			@replaceBy(newText,outsideElement)
 	replaceQr:->
 		xmlTemplater=@manager.getInstance('xmlTemplater')
@@ -130,12 +130,12 @@ class ImageModule
 		null
 	getPresentationImageXml:(rId, x,y,cx,cy)->
 		return """
-		'<p:pic><p:nvPicPr><p:cNvPr id="6" name="Picture 2"/><p:cNvPicPr><a:picLocks noChangeAspect="1" noChangeArrowheads="1"/></p:cNvPicPr><p:nvPr/></p:nvPicPr>
+		<p:pic><p:nvPicPr><p:cNvPr id="6" name="Picture 2"/><p:cNvPicPr><a:picLocks noChangeAspect="1" noChangeArrowheads="1"/></p:cNvPicPr><p:nvPr/></p:nvPicPr>
 		<p:blipFill><a:blip r:embed="rId#{rId}" cstate="print">
 		<a:extLst><a:ext uri="{28A0092B-C50C-407E-A947-70E740481C1C}">
 		<a14:useLocalDpi xmlns:a14="http://schemas.microsoft.com/office/drawing/2010/main" val="0"/></a:ext></a:extLst></a:blip>
 		<a:srcRect/><a:stretch><a:fillRect/></a:stretch></p:blipFill><p:spPr bwMode="auto">
-		<a:xfrm><a:off x="#{x}" y="#{y}"/><a:ext cx="#{cx}" cy="#{cy}"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom><a:noFill/><a:ln><a:noFill/></a:ln><a:effectLst/><a:extLst><a:ext uri="{909E8E84-426E-40DD-AFC4-6F175D3DCCD1}"><a14:hiddenFill xmlns:a14="http://schemas.microsoft.com/office/drawing/2010/main"><a:solidFill><a:schemeClr val="accent1"/></a:solidFill></a14:hiddenFill></a:ext><a:ext uri="{91240B29-F687-4F45-9708-019B960494DF}"><a14:hiddenLine xmlns:a14="http://schemas.microsoft.com/office/drawing/2010/main" w="9525"><a:solidFill><a:schemeClr val="tx1"/></a:solidFill><a:miter lim="800000"/><a:headEnd/><a:tailEnd/></a14:hiddenLine></a:ext><a:ext uri="{AF507438-7753-43E0-B8FC-AC1667EBCBE1}"><a14:hiddenEffects xmlns:a14="http://schemas.microsoft.com/office/drawing/2010/main"><a:effectLst><a:outerShdw dist="35921" dir="2700000" algn="ctr" rotWithShape="0"><a:schemeClr val="bg2"/></a:outerShdw></a:effectLst></a14:hiddenEffects></a:ext></a:extLst></p:spPr></p:pic>'
+		<a:xfrm><a:off x="#{x}" y="#{y}"/><a:ext cx="#{cx}" cy="#{cy}"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom><a:noFill/><a:ln><a:noFill/></a:ln><a:effectLst/><a:extLst><a:ext uri="{909E8E84-426E-40DD-AFC4-6F175D3DCCD1}"><a14:hiddenFill xmlns:a14="http://schemas.microsoft.com/office/drawing/2010/main"><a:solidFill><a:schemeClr val="accent1"/></a:solidFill></a14:hiddenFill></a:ext><a:ext uri="{91240B29-F687-4F45-9708-019B960494DF}"><a14:hiddenLine xmlns:a14="http://schemas.microsoft.com/office/drawing/2010/main" w="9525"><a:solidFill><a:schemeClr val="tx1"/></a:solidFill><a:miter lim="800000"/><a:headEnd/><a:tailEnd/></a14:hiddenLine></a:ext><a:ext uri="{AF507438-7753-43E0-B8FC-AC1667EBCBE1}"><a14:hiddenEffects xmlns:a14="http://schemas.microsoft.com/office/drawing/2010/main"><a:effectLst><a:outerShdw dist="35921" dir="2700000" algn="ctr" rotWithShape="0"><a:schemeClr val="bg2"/></a:outerShdw></a:effectLst></a14:hiddenEffects></a:ext></a:extLst></p:spPr></p:pic>
 		"""
 
 	getImageXml:(rId,size)->
