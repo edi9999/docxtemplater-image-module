@@ -1,5 +1,6 @@
 fs=require('fs')
 DocxGen=require('docxtemplater')
+PptxGen = DocxGen.PptxGen;
 expect=require('chai').expect
 
 fileNames=[
@@ -10,6 +11,7 @@ fileNames=[
 	'qrExample.docx',
 	'noImage.docx',
 	'qrExample2.docx',
+	'imagePresentationExample.pptx'
 ]
 
 ImageModule=require('../js/index.js')
@@ -27,7 +29,10 @@ loadFile=(name)->
 
 for name in fileNames
 	content=loadFile(name)
-	docX[name]=new DocxGen()
+	if name.indexOf('.docx') != -1
+		docX[name]=new DocxGen()
+	else
+		docX[name]=new PptxGen()
 	docX[name].loadedContent=content
 
 describe 'image adding with {% image} syntax', ()->
@@ -124,6 +129,23 @@ describe 'image adding with {% image} syntax', ()->
 
 		buffer=zip.generate({type:"nodebuffer"})
 		fs.writeFile("test_multi.docx",buffer);
+
+	it 'should work in powerpoint presentations',()->
+		name='imagePresentationExample.pptx'
+		imageModule=new ImageModule({centered:false, presentation:true})
+		docX[name].attachModule(imageModule)
+		out=docX[name]
+			.load(docX[name].loadedContent)
+			.setData({image:'examples/image.png'})
+			.render()
+
+		zip=out.getZip()
+
+		imageFile=zip.files['ppt/media/image_generated_1.png']
+		expect(imageFile?).to.equal(true)
+
+		fs.writeFile("test_presentation_image.pptx",zip.generate({type:"nodebuffer"}));
+
 	
 	it 'should work with image in header/footer',()->
 		name='imageHeaderFooterExample.docx'

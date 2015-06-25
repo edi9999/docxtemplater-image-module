@@ -3,11 +3,19 @@ ImgManager=require('./imgManager')
 ImgReplacer=require('./imgReplacer')
 fs=require('fs')
 
+jsxml = require("node-jsxml");
+Namespace = jsxml.Namespace
+QName = jsxml.QName
+XML = jsxml.XML
+XMLList = jsxml.XMLList
+
 class ImageModule
 	constructor:(@options={})->
 		if !@options.centered? then @options.centered=false
 		@qrQueue=[]
 		@imageNumber=1
+		if @options.presentation then @presentation=true
+		else @presentation=false
 	handleEvent:(event,eventData)->
 		if event=='rendering-file'
 			@renderingFileName=eventData
@@ -33,6 +41,21 @@ class ImageModule
 			.getInnerTag(templaterState)
 			.getOuterXml(outsideElement)
 		xmlTemplater.replaceXml(subContent,text)
+	getPositionFromText:()->
+		xmlTemplater=@manager.getInstance('xmlTemplater')
+		templaterState=@manager.getInstance('templaterState')
+		subContent=new SubContent(xmlTemplater.content)
+			.getInnerTag(templaterState)
+			.getOuterXml('p:sp').text
+		return_value={}
+		xml = new XML(subContent)
+		xform = xml.child('spPr').child('xfrm')
+		return_value.txtX = xform.child('off').attribute('x').getValue()
+		return_value.txtY = xform.child('off').attribute('y').getValue()
+		return_value.txtW = xform.child('ext').attribute('cx').getValue()
+		return_value.txtH = xform.child('ext').attribute('cy').getValue()
+		return_value
+
 	convertPixelsToEmus:(pixel)->
 		Math.round(pixel * 9525)
 	getSizeFromData:(imgData)->
@@ -54,6 +77,7 @@ class ImageModule
 		catch e
 			return @replaceBy(startEnd,tagXml)
 		imageRels=@imgManager.loadImageRels();
+		
 		if imageRels
 			rId=imageRels.addImageRels(@getNextImageName(),imgBuffer)
 
@@ -66,7 +90,11 @@ class ImageModule
 			if @options.centered==true
 				outsideElement=tagXml.substr(0,1)+':p'
 				newText=@getImageXmlCentered(rId,size)
-
+			if @presentation
+				positionOfTextBox = @getPositionFromText()
+				newText=@getPresentationImageXml(rId, positionOfTextBox.txtX, positionOfTextBox.txtY, positionOfTextBox.txtW, positionOfTextBox.txtH)
+				outsideElement = 'p:sp'
+			
 			@replaceBy(newText,outsideElement)
 	replaceQr:->
 		xmlTemplater=@manager.getInstance('xmlTemplater')
@@ -100,6 +128,16 @@ class ImageModule
 		if type=='xmlRendered' and @options.qrCode
 			@replaceQr()
 		null
+	getPresentationImageXml:(rId, x,y,cx,cy)->
+		return """
+		<p:pic><p:nvPicPr><p:cNvPr id="6" name="Picture 2"/><p:cNvPicPr><a:picLocks noChangeAspect="1" noChangeArrowheads="1"/></p:cNvPicPr><p:nvPr/></p:nvPicPr>
+		<p:blipFill><a:blip r:embed="rId#{rId}" cstate="print">
+		<a:extLst><a:ext uri="{28A0092B-C50C-407E-A947-70E740481C1C}">
+		<a14:useLocalDpi xmlns:a14="http://schemas.microsoft.com/office/drawing/2010/main" val="0"/></a:ext></a:extLst></a:blip>
+		<a:srcRect/><a:stretch><a:fillRect/></a:stretch></p:blipFill><p:spPr bwMode="auto">
+		<a:xfrm><a:off x="#{x}" y="#{y}"/><a:ext cx="#{cx}" cy="#{cy}"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom><a:noFill/><a:ln><a:noFill/></a:ln><a:effectLst/><a:extLst><a:ext uri="{909E8E84-426E-40DD-AFC4-6F175D3DCCD1}"><a14:hiddenFill xmlns:a14="http://schemas.microsoft.com/office/drawing/2010/main"><a:solidFill><a:schemeClr val="accent1"/></a:solidFill></a14:hiddenFill></a:ext><a:ext uri="{91240B29-F687-4F45-9708-019B960494DF}"><a14:hiddenLine xmlns:a14="http://schemas.microsoft.com/office/drawing/2010/main" w="9525"><a:solidFill><a:schemeClr val="tx1"/></a:solidFill><a:miter lim="800000"/><a:headEnd/><a:tailEnd/></a14:hiddenLine></a:ext><a:ext uri="{AF507438-7753-43E0-B8FC-AC1667EBCBE1}"><a14:hiddenEffects xmlns:a14="http://schemas.microsoft.com/office/drawing/2010/main"><a:effectLst><a:outerShdw dist="35921" dir="2700000" algn="ctr" rotWithShape="0"><a:schemeClr val="bg2"/></a:outerShdw></a:effectLst></a14:hiddenEffects></a:ext></a:extLst></p:spPr></p:pic>
+		"""
+
 	getImageXml:(rId,size)->
 		return """
         <w:drawing>

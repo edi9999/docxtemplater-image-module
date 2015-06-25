@@ -4,6 +4,15 @@ module.exports = class ImgManager
 	imageExtensions=['gif','jpeg','jpg','emf','png']
 	constructor:(@zip,@fileName)->
 		@endFileName=@fileName.replace(/^.*?([a-z0-9]+)\.xml$/,"$1")
+		if @fileName.indexOf("ppt/slides") == 0
+			@fileType = "ppt"
+			@fileTypeName = "presentation"
+			@relationshipFilePath = @fileType+"/slides/_rels/"+ this.endFileName + ".xml.rels";
+		else
+			@fileType = "word"
+			@fileTypeName = "document"
+			@relationshipFilePath = @fileType+"/_rels/"+ this.endFileName + ".xml.rels";
+		
 	getImageList: () ->
 		regex= ///
 		[^.]+  #name
@@ -22,7 +31,7 @@ module.exports = class ImgManager
 	hasImage:(fileName)->
 		@zip.files[fileName]?
 	loadImageRels: () ->
-		file=@zip.files["word/_rels/#{@endFileName}.xml.rels"] || @zip.files["word/_rels/document.xml.rels"]
+		file=@zip.files[@relationshipFilePath] || @zip.files[@fileType+"/_rels/"+@fileTypeName+".xml.rels"]
 		if file==undefined then return
 		content= DocUtils.decode_utf8 file.asText()
 		@xmlDoc= DocUtils.Str2xml content
@@ -49,11 +58,11 @@ module.exports = class ImgManager
 			@setImage "[Content_Types].xml",DocUtils.encode_utf8 DocUtils.xml2Str xmlDoc
 	addImageRels: (imageName,imageData,i=0) -> #Adding an image and returns it's Rid
 		realImageName=if i==0 then imageName else imageName+"(#{i})"
-		if @zip.files["word/media/#{realImageName}"]?
+		if @zip.files[@fileType+"/media/#{realImageName}"]?
 			return @addImageRels(imageName,imageData,i+1)
 		@maxRid++
 		file=
-			'name':"word/media/#{realImageName}"
+			'name':@fileType+"/media/#{realImageName}"
 			'data':imageData
 			'options':
 				base64: false
@@ -69,9 +78,12 @@ module.exports = class ImgManager
 		newTag.namespaceURI= null
 		newTag.setAttribute('Id',"rId#{@maxRid}")
 		newTag.setAttribute('Type','http://schemas.openxmlformats.org/officeDocument/2006/relationships/image')
-		newTag.setAttribute('Target',"media/#{realImageName}")
+		if @fileType == "ppt"
+			newTag.setAttribute('Target',"../media/#{realImageName}")
+		else
+			newTag.setAttribute('Target',"media/#{realImageName}")
 		relationships.appendChild newTag
-		@setImage("word/_rels/#{@endFileName}.xml.rels",DocUtils.encode_utf8 DocUtils.xml2Str @xmlDoc)
+		@setImage(@relationshipFilePath, DocUtils.encode_utf8 DocUtils.xml2Str @xmlDoc)
 		@maxRid
 	getImageName:(id=0)->
 		nameCandidate="Copie_"+id+".png"
@@ -79,7 +91,7 @@ module.exports = class ImgManager
 		if @hasImage(fullPath)
 			return @getImageName(id+1)
 		nameCandidate
-	getFullPath:(imgName)->"word/media/#{imgName}"
+	getFullPath:(imgName)->@fileType+"/media/#{imgName}"
 	getImageByRid:(rId)-> #This is to get an image by it's rId (returns null if no img was found)
 		relationships= @xmlDoc.getElementsByTagName('Relationship')
 		for relationship in relationships
@@ -87,7 +99,7 @@ module.exports = class ImgManager
 			if rId==cRId
 				path=relationship.getAttribute('Target')
 				if path.substr(0,6)=='media/'
-					return @zip.files["word/#{path}"]
+					return @zip.files[@fileType+"/#{path}"]
 				else
 					throw new Error("Rid is not an image")
 		throw new Error("No Media with this Rid found")
