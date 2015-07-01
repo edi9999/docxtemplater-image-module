@@ -35,7 +35,7 @@ class ImageModule
 		xmlTemplater.replaceXml(subContent,text)
 	convertPixelsToEmus:(pixel)->
 		Math.round(pixel * 9525)
-	getSizeFromData:(imgData)->
+	getSizeFromData: (imgData, tagData) ->
 		[150,150]
 	getImageFromData:(imgData)->
 		fs.readFileSync(imgData)
@@ -57,7 +57,7 @@ class ImageModule
 		if imageRels
 			rId=imageRels.addImageRels(@getNextImageName(),imgBuffer)
 
-			sizePixel=@getSizeFromData(imgBuffer)
+			sizePixel=@getSizeFromData(imgBuffer, tag)
 			size=[@convertPixelsToEmus(sizePixel[0]),@convertPixelsToEmus(sizePixel[1])]
 
 			if @options.centered==false
