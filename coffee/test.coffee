@@ -37,7 +37,7 @@ describe 'image adding with {% image} syntax', ()->
 		docX[name].attachModule(imageModule)
 		out=docX[name]
 			.load(docX[name].loadedContent)
-			.setData({image:'examples/image.png'})
+			.setData({image: { path: 'examples/image.png' }})
 			.render()
 
 		zip=out.getZip()
@@ -65,7 +65,7 @@ describe 'image adding with {% image} syntax', ()->
 		d.attachModule(imageModule)
 		out=d
 			.load(docX[name].loadedContent)
-			.setData({image:'examples/image.png'})
+			.setData({image: { path: 'examples/image.png' }})
 			.render()
 
 		zip=out.getZip()
@@ -97,7 +97,10 @@ describe 'image adding with {% image} syntax', ()->
 
 		out=docX[name]
 			.load(docX[name].loadedContent)
-			.setData({images:['examples/image.png','examples/image2.png']})
+			.setData images: [
+				{ path: 'examples/image.png' }
+				{ path: 'examples/image2.png' }
+			]
 
 		out
 			.render()
@@ -124,14 +127,14 @@ describe 'image adding with {% image} syntax', ()->
 
 		buffer=zip.generate({type:"nodebuffer"})
 		fs.writeFile("test_multi.docx",buffer);
-	
+
 	it 'should work with image in header/footer',()->
 		name='imageHeaderFooterExample.docx'
 		imageModule=new ImageModule({centered:false})
 		docX[name].attachModule(imageModule)
 		out=docX[name]
 			.load(docX[name].loadedContent)
-			.setData({image:'examples/image.png'})
+			.setData({image: { path: 'examples/image.png' }})
 			.render()
 
 		zip=out.getZip()
