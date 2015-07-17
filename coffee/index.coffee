@@ -35,10 +35,8 @@ class ImageModule
 		xmlTemplater.replaceXml(subContent,text)
 	convertPixelsToEmus:(pixel)->
 		Math.round(pixel * 9525)
-	getSizeFromData:(imgData)->
-		[150,150]
 	getImageFromData:(imgData)->
-		fs.readFileSync(imgData)
+		fs.readFileSync(imgData.path)
 	replaceTag:->
 		scopeManager=@manager.getInstance('scopeManager')
 		templaterState=@manager.getInstance('templaterState')
@@ -57,7 +55,7 @@ class ImageModule
 		if imageRels
 			rId=imageRels.addImageRels(@getNextImageName(),imgBuffer)
 
-			sizePixel=@getSizeFromData(imgBuffer)
+			sizePixel = imgData.size or [105, 150]
 			size=[@convertPixelsToEmus(sizePixel[0]),@convertPixelsToEmus(sizePixel[1])]
 
 			if @options.centered==false

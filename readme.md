@@ -13,43 +13,28 @@ install this module: `npm install docxtemplater-image-module`
 
 # Usage
 
-Your docx should contain the text: `{%image}`
+Your docx should contain the text: `{%myImage}`
 
-    ImageModule=require(‘docxtemplater-image-module’)
+```coffee
+ImageModule = require 'docxtemplater-image-module'
 
-    imageModule=new ImageModule({centered:false})
+imageModule = new ImageModule({ centered: false })
+docx = new DocxGen()
+  .attachModule(imageModule)
+  .load(content)
+  .setData({ myImage: { path: 'examples/image.png', size: [650, 200] })
+  .render()
 
-    docx=new DocxGen()
-        .attachModule(imageModule)
-        .load(content)
-        .setData({image:'examples/image.png'})
-        .render()
+buffer = docx
+  .getZip()
+  .generate( {type: 'nodebuffer' })
 
-    buffer= docx
-            .getZip()
-            .generate({type:"nodebuffer"})
-
-    fs.writeFile("test.docx",buffer);
+  fs.writeFile("test.docx",buffer);
+```
 
 # Options
 
  You can center the images using new ImageModule({centered:true}) instead
-
-## Size
-
-You can set the size of the image to what ever you want in pixel. By default it will be 150x150.
-One of the most useful cases of this is to set the images to be the size of that image.
-
-For this, you will need to install the [npm package ‘image-size’](https://www.npmjs.com/package/image-size)
-then, write:
-
-    imageModule=new ImageModule({centered:false})
-    imageModule.getSizeFromData=function(imgData) {
-       sizeOf=require('image-size');
-       sizeObj=sizeOf(imgData);
-       console.log(sizeObj);
-       return [sizeObj.width,sizeObj.height];
-    }
 
 # Notice
 
