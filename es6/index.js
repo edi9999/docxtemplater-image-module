@@ -1,34 +1,41 @@
 "use strict";
 
 var SubContent = require("docxtemplater").SubContent;
-var ImgManager = require("./imgManager");
-var ImgReplacer = require("./imgReplacer");
+var FootNoteManager = require("./footNoteManager");
+var FootNoteReplacer = require("./footNoteReplacer");
 
-class ImageModule {
+class FootNoteModule {
 	constructor(options = {}) {
 		this.options = options;
-		if (!(this.options.centered != null)) { this.options.centered = false; }
-		if (!(this.options.getImage != null)) { throw new Error("You should pass getImage"); }
-		if (!(this.options.getSize != null)) { throw new Error("You should pass getSize"); }
+		// if (!(this.options.centered != null)) { this.options.centered = false; }
+		// if (!(this.options.getImage != null)) { throw new Error("You should pass getImage"); }
+		// if (!(this.options.getSize != null)) { throw new Error("You should pass getSize"); }
 		this.qrQueue = [];
 		this.imageNumber = 1;
 	}
 	handleEvent(event, eventData) {
+		console.log("Handle event is called ");
+		console.log(event);
+		console.log(eventData);
+		console.log(this.manager);
 		if (event === "rendering-file") {
 			this.renderingFileName = eventData;
 			var gen = this.manager.getInstance("gen");
-			this.imgManager = new ImgManager(gen.zip, this.renderingFileName);
-			this.imgManager.loadImageRels();
+			this.footNoteManager = new FootNoteManager(gen.zip, this.renderingFileName);
+			console.log("About to load footNoteRels");
+			this.footNoteManager.loadFootNoteRels();
 		}
 		if (event === "rendered") {
 			if (this.qrQueue.length === 0) { return this.finished(); }
 		}
 	}
 	get(data) {
+		console.log("get(data) is called")
+		console.log(data)
 		if (data === "loopType") {
 			var templaterState = this.manager.getInstance("templaterState");
 			if (templaterState.textInsideTag[0] === "%") {
-				return "image";
+				return "footnote";
 			}
 		}
 		return null;
@@ -50,6 +57,7 @@ class ImageModule {
 		return Math.round(pixel * 9525);
 	}
 	replaceTag() {
+		console.log("replaceTag")
 		var scopeManager = this.manager.getInstance("scopeManager");
 		var templaterState = this.manager.getInstance("templaterState");
 		var xmlTemplater = this.manager.getInstance("xmlTemplater");
@@ -65,18 +73,21 @@ class ImageModule {
 		var tagXmlParagraph = tagXml.substr(0, 1) + ":p";
 
 		var startEnd = `<${tagXml}></${tagXml}>`;
+		var footNoteRels = this.footNoteManager.loadFootNoteRels();
+		if (!footNoteRels) {
+			return;
+		}
+		footNoteRels.addFootNote();
 		var imgBuffer;
+
 		try {
 			imgBuffer = this.options.getImage(tagValue, tag);
 		}
 		catch (e) {
 			return this.replaceBy(startEnd, tagXml);
 		}
-		var imageRels = this.imgManager.loadImageRels();
-		if (!imageRels) {
-			return;
-		}
-		var rId = imageRels.addImageRels(this.getNextImageName(), imgBuffer);
+		
+		var rId = footNoteRels.addImageRels(this.getNextImageName(), imgBuffer);
 		var sizePixel = this.options.getSize(imgBuffer, tagValue, tag);
 		var size = [this.convertPixelsToEmus(sizePixel[0]), this.convertPixelsToEmus(sizePixel[1])];
 		var newText = this.options.centered ? this.getImageXmlCentered(rId, size) : this.getImageXml(rId, size);
@@ -85,7 +96,7 @@ class ImageModule {
 	}
 	replaceQr() {
 		var xmlTemplater = this.manager.getInstance("xmlTemplater");
-		var imR = new ImgReplacer(xmlTemplater, this.imgManager);
+		var imR = new FootNoteReplacer(xmlTemplater, this.footNoteManager);
 		imR.getDataFromString = (result, cb) => {
 			if ((this.options.getImageAsync != null)) {
 				return this.options.getImageAsync(result, cb);
@@ -123,7 +134,7 @@ class ImageModule {
 		}
 	}
 	handle(type, data) {
-		if (type === "replaceTag" && data === "image") {
+		if (type === "replaceTag" && data === "footnote") {
 			this.replaceTag();
 		}
 		if (type === "xmlRendered" && this.options.qrCode) {
@@ -235,4 +246,4 @@ class ImageModule {
 	}
 }
 
-module.exports = ImageModule;
+module.exports = FootNoteModule;

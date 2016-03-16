@@ -5,10 +5,10 @@ var DocxQrCode = require("./docxQrCode");
 var PNG = require("png-js");
 var base64encode = require("./base64").encode;
 
-module.exports = class ImgReplacer {
-	constructor(xmlTemplater, imgManager) {
+module.exports = class FootNoteReplacer {
+	constructor(xmlTemplater, footNoteManager) {
 		this.xmlTemplater = xmlTemplater;
-		this.imgManager = imgManager;
+		this.footNoteManager = footNoteManager;
 		this.imageSetter = this.imageSetter.bind(this);
 		this.imgMatches = [];
 		this.xmlTemplater.numQrCode = 0;
@@ -31,8 +31,8 @@ module.exports = class ImgReplacer {
 		if (docxqrCode.callbacked === true) { return; }
 		docxqrCode.callbacked = true;
 		docxqrCode.xmlTemplater.numQrCode--;
-		this.imgManager.setImage(`word/media/${docxqrCode.imgName}`, docxqrCode.data, {binary: true});
-		return this.popQrQueue(this.imgManager.fileName + "-" + docxqrCode.num, false);
+		this.footNoteManager.setImage(`word/media/${docxqrCode.imgName}`, docxqrCode.data, {binary: true});
+		return this.popQrQueue(this.footNoteManager.fileName + "-" + docxqrCode.num, false);
 	}
 	getXmlImg(match) {
 		var baseDocument = `<?xml version="1.0" ?>
@@ -77,12 +77,12 @@ module.exports = class ImgReplacer {
 		if (tag === undefined) { throw new Error("tag undefined"); }
 		// if image is already a replacement then do nothing
 		if (tag.getAttribute("name").substr(0, 6) === "Copie_") { return; }
-		var imgName = this.imgManager.getImageName();
-		this.pushQrQueue(this.imgManager.fileName + "-" + num, true);
-		var newId = this.imgManager.addImageRels(imgName, "");
+		var imgName = this.footNoteManager.getImageName();
+		this.pushQrQueue(this.footNoteManager.fileName + "-" + num, true);
+		var newId = this.footNoteManager.addImageRels(imgName, "");
 		this.xmlTemplater.imageId++;
-		var oldFile = this.imgManager.getImageByRid(rId);
-		this.imgManager.setImage(this.imgManager.getFullPath(imgName), oldFile.data, {binary: true});
+		var oldFile = this.footNoteManager.getImageByRid(rId);
+		this.footNoteManager.setImage(this.footNoteManager.getFullPath(imgName), oldFile.data, {binary: true});
 		tag.setAttribute("name", `${imgName}`);
 		tagrId.setAttribute("r:embed", `rId${newId}`);
 		var imageTag = xmlImg.getElementsByTagName("w:drawing")[0];
