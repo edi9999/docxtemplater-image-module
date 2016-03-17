@@ -15,16 +15,17 @@ class FootnoteModule {
 		if (event === "rendering-file") {
 			var gen = this.manager.getInstance("gen");
 			this.zip = gen.zip;
-			this.addStyles();
+			// this.addStyles();
 			// this.addStylesWithEffects();
-			this.updateSettings();
-			this.loadFootNoteRels();
-			this.addFootNoteContentType();
-			this.addFootNoteRels();
-			this.createFootNotesFile();
-			this.addEndNoteRels();
-			this.addEndNotesContentType()
-			this.createEndNotesFile();
+			// this.updateSettings();
+			// this.loadFootNoteRels();
+			// this.addFootNoteContentType();
+			// this.addFootNoteRels();
+			// this.createFootNotesFile();
+			// this.addEndNoteRels();
+			// this.addEndNotesContentType()
+			// this.createEndNotesFile();
+			this.addFootNotes();
 			return gen;
 		} else if (event === "rendered") {
 			return this.finished();
@@ -121,13 +122,18 @@ class FootnoteModule {
 	}
 
 	addFootNotes() {
+		var file = this.zip.files["word/footnotes.xml"];
+		var xmlString = DocUtils.decodeUtf8(file.asText());
+
 		var output = "";
 		var footnotes = this.options.footnotes;
 		for (var counter = 0; counter < footnotes.length; counter++) {
 			var referenceNumber = counter + 1
 			output += "<w:footnote w:id='" + referenceNumber + "'><w:p><w:pPr><w:pStyle w:val='FootnoteText'/></w:pPr><w:r><w:rPr><w:rStyle w:val='FootnoteReference'/></w:rPr><w:footnoteRef/></w:r><w:r><w:t xml:space='preserve'>" + footnotes[counter] + "</w:t></w:r></w:p></w:footnote>"
 		}
-		return output;
+
+		xmlString = xmlString.replace("</w:footnotes>", output + "</w:footnotes>")
+		this.updateFile("word/footnotes.xml",xmlString);
 	}
 
 	createEndNotesFile() {
