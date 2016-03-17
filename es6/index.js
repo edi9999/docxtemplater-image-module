@@ -16,7 +16,7 @@ class FootnoteModule {
 			var gen = this.manager.getInstance("gen");
 			this.zip = gen.zip;
 			this.addStyles();
-			this.addStylesWithEffects();
+			// this.addStylesWithEffects();
 			this.updateSettings();
 			this.loadFootNoteRels();
 			this.addFootNoteContentType();
@@ -53,7 +53,7 @@ class FootnoteModule {
 		var addTag = true;
 		
 		var types = xmlDoc.getElementsByTagName("Types")[0];
-		var newTag = xmlDoc.createElement("Default");
+		var newTag = xmlDoc.createElement("Override");
 		newTag.namespaceURI = null;
 		newTag.setAttribute("ContentType", "application/vnd.openxmlformats-officedocument.wordprocessingml.footnotes+xml");
 		newTag.setAttribute("PartName", "/word/footnotes.xml");
@@ -67,7 +67,7 @@ class FootnoteModule {
 		var addTag = true;
 		
 		var types = xmlDoc.getElementsByTagName("Types")[0];
-		var newTag = xmlDoc.createElement("Default");
+		var newTag = xmlDoc.createElement("Override");
 		newTag.namespaceURI = null;
 		newTag.setAttribute("ContentType", "application/vnd.openxmlformats-officedocument.wordprocessingml.endnotes+xml");
 		newTag.setAttribute("PartName", "/word/endnotes.xml");
@@ -107,7 +107,7 @@ class FootnoteModule {
 
 
 	createFootNotesFile() {
-		var prefix = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:footnotes mc:Ignorable="w14 wp14" xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:mo="http://schemas.microsoft.com/office/mac/office/2008/main" xmlns:mv="urn:schemas-microsoft-com:mac:vml" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:w10="urn:schemas-microsoft-com:office:word" xmlns:w14="http://schemas.microsoft.com/office/word/2010/wordml" xmlns:wne="http://schemas.microsoft.com/office/word/2006/wordml" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" xmlns:wp14="http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing" xmlns:wpc="http://schemas.microsoft.com/office/word/2010/wordprocessingCanvas" xmlns:wpg="http://schemas.microsoft.com/office/word/2010/wordprocessingGroup" xmlns:wpi="http://schemas.microsoft.com/office/word/2010/wordprocessingInk" xmlns:wps="http://schemas.microsoft.com/office/word/2010/wordprocessingShape"><w:footnote w:id="-1" w:type="separator"><w:pw:rsidR="002A7BE7" w:rsidRDefault="002A7BE7"><w:r><w:separator/></w:r></w:p></w:footnote><w:footnote w:id="0" w:type="continuationSeparator"><w:p w:rsidR="002A7BE7" w:rsidRDefault="002A7BE7"><w:r><w:continuationSeparator/></w:r></w:p></w:footnote>';
+		var prefix = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:footnotes mc:Ignorable="w14 wp14" xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:mo="http://schemas.microsoft.com/office/mac/office/2008/main" xmlns:mv="urn:schemas-microsoft-com:mac:vml" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:w10="urn:schemas-microsoft-com:office:word" xmlns:w14="http://schemas.microsoft.com/office/word/2010/wordml" xmlns:wne="http://schemas.microsoft.com/office/word/2006/wordml" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" xmlns:wp14="http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing" xmlns:wpc="http://schemas.microsoft.com/office/word/2010/wordprocessingCanvas" xmlns:wpg="http://schemas.microsoft.com/office/word/2010/wordprocessingGroup" xmlns:wpi="http://schemas.microsoft.com/office/word/2010/wordprocessingInk" xmlns:wps="http://schemas.microsoft.com/office/word/2010/wordprocessingShape"><w:footnote w:id="-1" w:type="separator"><w:p><w:r><w:separator/></w:r></w:p></w:footnote><w:footnote w:id="0" w:type="continuationSeparator"><w:p><w:r><w:continuationSeparator/></w:r></w:p></w:footnote>';
 		var content = this.addFootNotes();
 		var suffix = '</w:footnotes>';
 		var xmlString = prefix + content + suffix;
@@ -123,9 +123,9 @@ class FootnoteModule {
 	addFootNotes() {
 		var output = "";
 		var footnotes = this.options.footnotes;
-		for (var counter = 0; counter < footnotes.length - 1; counter++) {
+		for (var counter = 0; counter < footnotes.length; counter++) {
 			var referenceNumber = counter + 1
-			output += "<w:footnote w:id='" + referenceNumber + "'><w:p><w:pPr><w:pStyle w:val='FootnoteText'/></w:pPr><w:r><w:rPr><w:rStyle w:val='FootnoteReference'/></w:rPr><w:footnoteRef/></w:r><w:r><w:t xml:space='preserve'/></w:r><w:r><w:t>" + footnotes[counter] + "</w:t></w:r></w:p></w:footnote>"
+			output += "<w:footnote w:id='" + referenceNumber + "'><w:p><w:pPr><w:pStyle w:val='FootnoteText'/></w:pPr><w:r><w:rPr><w:rStyle w:val='FootnoteReference'/></w:rPr><w:footnoteRef/></w:r><w:r><w:t xml:space='preserve'>" + footnotes[counter] + "</w:t></w:r></w:p></w:footnote>"
 		}
 		return output;
 	}
@@ -138,7 +138,7 @@ class FootnoteModule {
 	addStyles() {
 		var file = this.zip.files["word/styles.xml"];
 		var xmlString = DocUtils.decodeUtf8(file.asText());
-		xmlString = xmlString.replace("</w:styles>", "<w:style w:styleId='FootnoteText' w:type='paragraph'><w:name w:val='footnote text'/><w:basedOn w:val='Normal'/><w:link w:val='FootnoteTextChar'/><w:uiPriority w:val='99'/><w:unhideWhenUsed/></w:style><w:style w:customStyle='1' w:styleId='FootnoteTextChar' w:type='character'><w:name w:val='Footnote Text Char'/><w:basedOn w:val='DefaultParagraphFont'/><w:link w:val='FootnoteText'/><w:uiPriority w:val='99'/></w:style><w:style w:styleId='FootnoteReference' w:type='character'><w:name w:val='footnote reference'/><w:basedOn w:val='DefaultParagraphFont'/><w:uiPriority w:val='99'/><w:unhideWhenUsed/><w:rPr><w:vertAlign w:val='superscript'/></w:rPr></w:style></w:styles>")
+		xmlString = xmlString.replace("</w:styles>", "<w:style w:styleId='FootnoteText' w:type='paragraph'><w:name w:val='footnote text'/><w:basedOn w:val='Normal'/><w:link w:val='FootnoteTextChar'/><w:uiPriority w:val='99'/><w:unhideWhenUsed/><w:pPr><w:spacing w:line='240' w:lineRule='auto'/></w:pPr></w:style><w:style w:customStyle='1' w:styleId='FootnoteTextChar' w:type='character'><w:name w:val='Footnote Text Char'/><w:basedOn w:val='DefaultParagraphFont'/><w:link w:val='FootnoteText'/><w:uiPriority w:val='99'/></w:style><w:style w:styleId='FootnoteReference' w:type='character'><w:name w:val='footnote reference'/><w:basedOn w:val='DefaultParagraphFont'/><w:uiPriority w:val='99'/><w:unhideWhenUsed/><w:rPr><w:vertAlign w:val='superscript'/></w:rPr></w:style></w:styles>")
 		this.updateFile("word/styles.xml",xmlString);
 
 	}
@@ -146,7 +146,7 @@ class FootnoteModule {
 	addStylesWithEffects() {
 		var file = this.zip.files["word/stylesWithEffects.xml"];
 		var xmlString = DocUtils.decodeUtf8(file.asText());
-		xmlString = xmlString.replace("</w:styles>", "<w:style w:styleId='FootnoteText' w:type='paragraph'><w:name w:val='footnote text'/><w:basedOn w:val='Normal'/><w:link w:val='FootnoteTextChar'/><w:uiPriority w:val='99'/><w:unhideWhenUsed/></w:style><w:style w:customStyle='1' w:styleId='FootnoteTextChar' w:type='character'><w:name w:val='Footnote Text Char'/><w:basedOn w:val='DefaultParagraphFont'/><w:link w:val='FootnoteText'/><w:uiPriority w:val='99'/></w:style><w:style w:styleId='FootnoteReference' w:type='character'><w:name w:val='footnote reference'/><w:basedOn w:val='DefaultParagraphFont'/><w:uiPriority w:val='99'/><w:unhideWhenUsed/><w:rPr><w:vertAlign w:val='superscript'/></w:rPr></w:style></w:styles>")
+		xmlString = xmlString.replace("</w:styles>", "<w:style w:styleId='FootnoteText' w:type='paragraph'><w:name w:val='footnote text'/><w:basedOn w:val='Normal'/><w:link w:val='FootnoteTextChar'/><w:uiPriority w:val='99'/><w:unhideWhenUsed/><w:pPr><w:spacing w:line='240' w:lineRule='auto'/></w:pPr></w:style><w:style w:customStyle='1' w:styleId='FootnoteTextChar' w:type='character'><w:name w:val='Footnote Text Char'/><w:basedOn w:val='DefaultParagraphFont'/><w:link w:val='FootnoteText'/><w:uiPriority w:val='99'/></w:style><w:style w:styleId='FootnoteReference' w:type='character'><w:name w:val='footnote reference'/><w:basedOn w:val='DefaultParagraphFont'/><w:uiPriority w:val='99'/><w:unhideWhenUsed/><w:rPr><w:vertAlign w:val='superscript'/></w:rPr></w:style></w:styles>")
 		this.updateFile("word/stylesWithEffects.xml",xmlString);
 
 	}
