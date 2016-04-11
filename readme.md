@@ -126,9 +126,11 @@ Instructions for Soomo Dev
 You can build a release for the browser with the following commands
 
 ```
-npm install -g gulp jasmine-node uglify-js browserify
+npm install -g gulp jasmine-node uglify-js browserify babel-cli
 npm install
-browserify -x docxtemplater ./es6/index.js -s FootnoteModule > <%soomo-core-directory%>/vendor/assets/javascripts/docxtemplater-footnote.v1.0.0.js
+mkdir -p js
+babel -d js/ es6/
+browserify -x docxtemplater -r ./js/index.js -s FootnoteModule > <%soomo-core-directory%>/vendor/assets/javascripts/docxtemplater-footnote.v1.0.0.js
 ```
 * Use branch turabian-footnotes on core
 * To get things setup you could use this docx [template](http://assets.soomopublishing.com.s3.amazonaws.com/courses/USHistory2/HIS114MilestoneOneTemplate.Turabian_Tarun_runs.docx)
