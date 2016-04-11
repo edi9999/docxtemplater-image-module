@@ -4,12 +4,16 @@ var DocUtils = require("./docUtils");
 
 var imageExtensions = ["gif", "jpeg", "jpg", "emf", "png"];
 
-module.exports = class ImgManager {
+module.exports = class FootNoteManager {
 	constructor(zip, fileName) {
 		this.zip = zip;
 		this.fileName = fileName;
 		this.endFileName = this.fileName.replace(/^.*?([a-z0-9]+)\.xml$/, "$1");
+		this.footNoteRelAdded = false;
+		this.footNoteContentTypeAdded = false;
+		this.footNotesFileCreated = false;
 	}
+
 	getImageList() {
 		var regex = /		[^.]+		\.		([^.]+)		/;
 		var imageList = [];
@@ -25,11 +29,19 @@ module.exports = class ImgManager {
 		this.zip.remove(fileName);
 		return this.zip.file(fileName, data, options);
 	}
+
+	updateFile(fileName, data, options = {}) {
+		this.zip.remove(fileName);
+		return this.zip.file(fileName, data, options);
+	}
+
 	hasImage(fileName) {
 		return this.zip.files[fileName] != null;
 	}
-	loadImageRels() {
+	loadFootNoteRels() {
+		console.log("In loadFootNoteRels")
 		var file = this.zip.files[`word/_rels/${this.endFileName}.xml.rels`] || this.zip.files["word/_rels/document.xml.rels"];
+		console.log(file)
 		if (file === undefined) { return; }
 		var content = DocUtils.decodeUtf8(file.asText());
 		this.xmlDoc = DocUtils.str2xml(content);
@@ -40,6 +52,7 @@ module.exports = class ImgManager {
 			tag = iterable[i];
 			RidArray.push(parseInt(tag.getAttribute("Id").substr(3), 10));
 		}
+		console.log(RidArray);
 		this.maxRid = DocUtils.maxArray(RidArray);
 		this.imageRels = [];
 		return this;
@@ -64,7 +77,65 @@ module.exports = class ImgManager {
 			return this.setImage("[Content_Types].xml", DocUtils.encodeUtf8(DocUtils.xml2Str(xmlDoc)));
 		}
 	}
-	// Adding an image and returns it's Rid
+	addFootNoteContentType() {
+		if (this.footNoteContentTypeAdded) {
+			return
+		}
+		var content = this.zip.files["[Content_Types].xml"].asText();
+		var xmlDoc = DocUtils.str2xml(content);
+		var addTag = true;
+		
+		var types = xmlDoc.getElementsByTagName("Types")[0];
+		var newTag = xmlDoc.createElement("Default");
+		newTag.namespaceURI = null;
+		newTag.setAttribute("ContentType", "application/vnd.openxmlformats-officedocument.wordprocessingml.footnotes+xml");
+		newTag.setAttribute("PartName", "/word/footnotes.xml");
+		types.appendChild(newTag);
+		this.updateFile("[Content_Types].xml", DocUtils.encodeUtf8(DocUtils.xml2Str(xmlDoc)));
+		this.footNoteContentTypeAdded = true;
+	}
+
+	addFootNoteRels() {
+		console.log("In add foot note rels");
+		console.log(this.footNoteRelAdded);
+		if (this.footNoteRelAdded) {
+			return
+		}
+		this.maxRid++;
+		var file = this.zip.files[`word/_rels/${this.endFileName}.xml.rels`] || this.zip.files["word/_rels/document.xml.rels"];
+		var content = DocUtils.decodeUtf8(file.asText());
+		var xmlDoc = DocUtils.str2xml(content);
+		console.log(xmlDoc);
+		var relationships = xmlDoc.getElementsByTagName("Relationships")[0];
+		var newTag = xmlDoc.createElement("Relationship");
+		newTag.namespaceURI = null;
+		newTag.setAttribute("Id", `rId${this.maxRid}`);
+		newTag.setAttribute("Type", "http://schemas.openxmlformats.org/officeDocument/2006/relationships/footnotes");
+		newTag.setAttribute("Target", 'footnotes.xml');
+		relationships.appendChild(newTag);
+		console.log(relationships);
+		this.footNoteRelAdded = true;
+		console.log(this.footNoteRelAdded);
+		console.log(file.name);
+		this.updateFile(file.name, DocUtils.encodeUtf8(DocUtils.xml2Str(xmlDoc)));
+	}
+
+	addFootNote() {
+		if (!this.footNotesFileCreated) {
+			this.createFootNotesFile()
+		}
+		this.addFootNoteRels();
+		this.addFootNoteContentType();
+		
+
+	}
+
+	createFootNotesFile() {
+		var xmlString = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:footnotes mc:Ignorable="w14 wp14" xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:mo="http://schemas.microsoft.com/office/mac/office/2008/main" xmlns:mv="urn:schemas-microsoft-com:mac:vml" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:w10="urn:schemas-microsoft-com:office:word" xmlns:w14="http://schemas.microsoft.com/office/word/2010/wordml" xmlns:wne="http://schemas.microsoft.com/office/word/2006/wordml" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" xmlns:wp14="http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing" xmlns:wpc="http://schemas.microsoft.com/office/word/2010/wordprocessingCanvas" xmlns:wpg="http://schemas.microsoft.com/office/word/2010/wordprocessingGroup" xmlns:wpi="http://schemas.microsoft.com/office/word/2010/wordprocessingInk" xmlns:wps="http://schemas.microsoft.com/office/word/2010/wordprocessingShape"></w:footnotes>'
+		this.zip.file("/word/footnotes.xml",xmlString, {});
+		this.footNotesFileCreated = true;
+	}
+
 	addImageRels(imageName, imageData, i = 0) {
 		var realImageName = i === 0 ? imageName : imageName + `(${i})`;
 		if ((this.zip.files[`word/media/${realImageName}`] != null)) {

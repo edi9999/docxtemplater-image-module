@@ -120,16 +120,20 @@ Testing
 
 You can test that everything works fine using the command `mocha`. This will also create some docx files under the root directory that you can open to check if the generation was correct.
 
-Building in the browser
+Instructions for Soomo Dev
 =======================
 
 You can build a release for the browser with the following commands
 
 ```
-npm install -g gulp jasmine-node uglify-js browserify
+npm install -g gulp jasmine-node uglify-js browserify babel-cli
 npm install
-gulp allCoffee
-mkdir build -p
-browserify -r ./js/index.js -s ImageModule > build/imagemodule.js
-uglifyjs build/imagemodule.js > build/imagemodule.min.js # Optional
+mkdir -p js
+babel -d js/ es6/
+browserify -x docxtemplater -r ./js/index.js -s FootnoteModule > <%soomo-core-directory%>/vendor/assets/javascripts/docxtemplater-footnote.v1.0.0.js
 ```
+* Use branch turabian-footnotes on core
+* To get things setup you could use this docx [template](http://assets.soomopublishing.com.s3.amazonaws.com/courses/USHistory2/HIS114MilestoneOneTemplate.Turabian_Tarun_runs.docx)
+
+
+
