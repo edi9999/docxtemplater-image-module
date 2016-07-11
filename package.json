@@ -1,10 +1,10 @@
 {
   "name": "docxtemplater-image-module",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Image Module for docxtemplater v1.0",
   "main": "js/index.js",
   "scripts": {
-    "compile": "rm js -rf ; mkdir -p js; babel es6 --out-dir js",
+    "compile": "rm js -rf && babel es6 --out-dir js",
     "prepublish": "npm run compile",
     "test:compiled": "mocha js/test.js",
     "test:es6": "mocha es6/test.js",
