@@ -18,7 +18,10 @@
     "chai": "^3.4.1",
     "docxtemplater": "^2.1.0",
     "eslint": "^2.7.0",
-    "mocha": "^2.4.5"
+    "mocha": "^2.4.5",
+    "mkdirp": "^0.5.1",
+    "babel-cli": "^6.11.4",
+    "rimraf": "^2.5.3"
   },
   "repository": {
     "type": "git",
@@ -27,11 +30,8 @@
   "author": "Edgar Hipp",
   "license": "MIT",
   "dependencies": {
-    "babel-cli": "^6.11.4",
-    "mkdirp": "^0.5.1",
     "png-js": "^0.1.1",
     "qrcode-reader": "^0.2.1",
-    "rimraf": "^2.5.3",
     "xmldom": "^0.1.22"
   }
 }
