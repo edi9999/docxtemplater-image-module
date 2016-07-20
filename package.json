@@ -4,7 +4,7 @@
   "description": "Image Module for docxtemplater v1.0",
   "main": "js/index.js",
   "scripts": {
-    "compile": "rm js -rf ; mkdir -p js; babel es6 --out-dir js",
+    "compile": "rimraf js && mkdirp js && babel es6 --out-dir js",
     "prepublish": "npm run compile",
     "test:compiled": "mocha js/test.js",
     "test:es6": "mocha es6/test.js",
@@ -27,8 +27,11 @@
   "author": "Edgar Hipp",
   "license": "MIT",
   "dependencies": {
+    "babel-cli": "^6.11.4",
+    "mkdirp": "^0.5.1",
     "png-js": "^0.1.1",
     "qrcode-reader": "^0.2.1",
+    "rimraf": "^2.5.3",
     "xmldom": "^0.1.22"
   }
 }
