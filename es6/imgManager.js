@@ -30,9 +30,14 @@ module.exports = class ImgManager {
 		return this.zip.files[fileName] != null;
 	}
 	loadImageRels() {
-		const file = this.zip.files[`word/_rels/${this.endFileName}.xml.rels`] || this.zip.files["word/_rels/document.xml.rels"];
-		if (file == null) { return; }
-		const content = DocUtils.decodeUtf8(file.asText());
+		const file = this.zip.files[`word/_rels/${this.endFileName}.xml.rels`];
+		let content;
+		if(file!=null){
+			content = DocUtils.decodeUtf8(file.asText());
+		}else{
+			content = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><Relationships xmlns=\"http://schemas.openxmlformats.org/package/2006/relationships\"></Relationships>";
+			this.addPartRels(`/word/_rels/${this.endFileName}.xml.rels`,"application/vnd.openxmlformats-package.relationships+xml")
+		}
 		this.xmlDoc = DocUtils.str2xml(content);
 		// Get all Rids
 		const RidArray = [0];
@@ -64,6 +69,26 @@ module.exports = class ImgManager {
 			newTag.namespaceURI = null;
 			newTag.setAttribute("ContentType", contentType);
 			newTag.setAttribute("Extension", extension);
+			types.appendChild(newTag);
+			return this.setImage("[Content_Types].xml", DocUtils.encodeUtf8(DocUtils.xml2Str(xmlDoc)));
+		}
+	}
+
+	addPartRels(partName, contentType) {
+		const content = this.zip.files["[Content_Types].xml"].asText();
+		const xmlDoc = DocUtils.str2xml(content);
+		let addTag = true;
+		const defaultTags = xmlDoc.getElementsByTagName("Override");
+		for (let i = 0, tag; i < defaultTags.length; i++) {
+			tag = defaultTags[i];
+			if (tag.getAttribute("PartName") === partName) { addTag = false; }
+		}
+		if (addTag) {
+			const types = xmlDoc.getElementsByTagName("Types")[0];
+			const newTag = xmlDoc.createElement("Override");
+			newTag.namespaceURI = null;
+			newTag.setAttribute("ContentType", contentType);
+			newTag.setAttribute("PartName", partName);
 			types.appendChild(newTag);
 			return this.setImage("[Content_Types].xml", DocUtils.encodeUtf8(DocUtils.xml2Str(xmlDoc)));
 		}
