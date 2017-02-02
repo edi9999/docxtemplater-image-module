@@ -33,5 +33,7 @@
   },
   "author": "Edgar Hipp",
   "license": "MIT",
-  "dependencies": {}
+  "dependencies": {
+    "xmldom": "^0.1.27"
+  }
 }

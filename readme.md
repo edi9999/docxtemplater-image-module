@@ -88,7 +88,7 @@ imageModule=new ImageModule(opts);
 Centering images
 ================
 
-You can center the images using opts.centered=true instead
+You can center the images using opts.centered=true or by using {%%image} instead of {%image} in your documents
 
 Size and path based on placeholder
 ==================================

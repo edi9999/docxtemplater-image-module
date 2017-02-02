@@ -5,19 +5,39 @@ const extensionRegex = /[^.]+\.([^.]+)/;
 
 module.exports = class ImgManager {
 	constructor(zip, fileName, xmlDocuments) {
+		this.fileType = this.getFileType(fileName);
+		this.fileTypeName = this.getFileTypeName(fileName);
+		this.relsFilePath = this.getRelsFile(fileName);
 		this.zip = zip;
 		this.xmlDocuments = xmlDocuments;
-		const relsFileName = this.getRelsFile(fileName);
-		this.relsDoc = xmlDocuments[relsFileName] || this.createEmptyRelsDoc(xmlDocuments, relsFileName);
+		this.relsDoc = xmlDocuments[this.relsFilePath] || this.createEmptyRelsDoc(xmlDocuments, this.relsFilePath);
 	}
 	getRelsFile(fileName) {
-		let fileParts = fileName.split("/");
-		fileParts[fileParts.length - 1] = fileParts[fileParts.length - 1] + ".rels";
-		fileParts = [fileParts[0], "_rels"].concat(fileParts.slice(1));
-		return fileParts.join("/");
+		let relsFilePath;
+		const relsFileName = this.getRelsFileName(fileName);
+		const fileType = this.getFileType(fileName);
+		if (fileType === "ppt") {
+			relsFilePath = "ppt/slides/_rels/" + relsFileName;
+		}
+		else {
+			relsFilePath = "word/_rels/" + relsFileName;
+		}
+		return relsFilePath;
+	}
+	getRelsFileName(fileName) {
+		return fileName.replace(/^.*?([a-z0-9]+)\.xml$/, "$1") + ".xml.rels";
+	}
+	getFileType(fileName) {
+		return (fileName.indexOf("ppt/slides") === 0) ? "ppt" : "word";
+	}
+	getFileTypeName(fileName) {
+		return (fileName.indexOf("ppt/slides") === 0) ? "presentation" : "document";
 	}
 	createEmptyRelsDoc(xmlDocuments, relsFileName) {
-		const file = this.zip.files["word/_rels/document.xml.rels"];
+		const file = this.zip.files[relsFileName] || this.zip.files[this.fileType + "/_rels/" + this.fileTypeName + ".xml.rels"];
+		if (!file) {
+			return;
+		}
 		const content = DocUtils.decodeUtf8(file.asText());
 		const relsDoc = DocUtils.str2xml(content);
 		const relationships = relsDoc.getElementsByTagName("Relationships")[0];
@@ -61,11 +81,11 @@ module.exports = class ImgManager {
 			i = 0;
 		}
 		const realImageName = i === 0 ? imageName : imageName + `(${i})`;
-		if (this.zip.files[`word/media/${realImageName}`] != null) {
+		if (this.zip.files[`${this.fileType}/media/${realImageName}`] != null) {
 			return this.addImageRels(imageName, imageData, i + 1);
 		}
 		const image = {
-			name: `word/media/${realImageName}`,
+			name: `${this.fileType}/media/${realImageName}`,
 			data: imageData,
 			options: {
 				binary: true,
@@ -80,7 +100,12 @@ module.exports = class ImgManager {
 		const maxRid = this.loadImageRels() + 1;
 		newTag.setAttribute("Id", `rId${maxRid}`);
 		newTag.setAttribute("Type", "http://schemas.openxmlformats.org/officeDocument/2006/relationships/image");
-		newTag.setAttribute("Target", `media/${realImageName}`);
+		if (this.fileType === "ppt") {
+			newTag.setAttribute("Target", `../media/${realImageName}`);
+		}
+		else {
+			newTag.setAttribute("Target", `media/${realImageName}`);
+		}
 		relationships.appendChild(newTag);
 		return maxRid;
 	}
