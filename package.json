@@ -34,6 +34,10 @@
     "type": "git",
     "url": "https://github.com/open-xml-templating/docxtemplater-image-module"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/open-xml-templating/docxtemplater-image-module"
+  },
   "author": "Edgar Hipp",
   "license": "MIT",
   "dependencies": {
