@@ -46,7 +46,7 @@ module.exports = class ImgManager {
 		const relsDoc = DocUtils.str2xml(DocUtils.xml2str(doc));
 		const relationships = relsDoc.getElementsByTagName("Relationships")[0];
 		const relationshipChilds = relationships.getElementsByTagName("Relationship");
-		for (let i = 0, l = relationshipChilds.length; i < l; i++) {
+		for (let i = relationshipChilds.length - 1; i >= 0; i--) {
 			relationships.removeChild(relationshipChilds[i]);
 		}
 		xmlDocuments[relsFileName] = relsDoc;
@@ -74,7 +74,6 @@ module.exports = class ImgManager {
 		}
 		const types = contentTypeDoc.getElementsByTagName("Types")[0];
 		const newTag = contentTypeDoc.createElement("Default");
-		newTag.namespaceURI = null;
 		newTag.setAttribute("ContentType", contentType);
 		newTag.setAttribute("Extension", extension);
 		types.appendChild(newTag);
